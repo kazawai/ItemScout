@@ -25,6 +25,8 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
+Color palette : [https://coolors.co/palette/00a6fb-0582ca-006494-003554-051923](https://coolors.co/palette/00a6fb-0582ca-006494-003554-051923).
+
 ## Get a fresh project
 
 When you're ready, run:

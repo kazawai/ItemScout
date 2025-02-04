@@ -47,14 +47,17 @@ const styles = StyleSheet.create({
     fontSize: 32,
     fontWeight: 'bold',
     lineHeight: 32,
+    fontFamily: 'PoppinsBold',
   },
   subtitle: {
     fontSize: 20,
     fontWeight: 'bold',
+    lineHeight: 24,
+    fontFamily: 'Poppins',
   },
   link: {
     lineHeight: 30,
     fontSize: 16,
-    color: '#0a7ea4',
+    color: '#00A6FB',
   },
 });
