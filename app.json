@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "WhereIsApp",
-    "slug": "WhereIsApp",
+    "name": "ItemScout",
+    "slug": "ItemScout",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

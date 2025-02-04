@@ -1,6 +1,6 @@
-# Welcome to your Expo app 👋
+# Welcome to ItemScout 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+As the `init` command is deprecated when doing `npx react-native init`, instead of switching to `npx @react-native-community/cli init` for identical behavior, I went ahead and read the official documentation, in which they strongly suggested to use the `npx create-expo-app@latest` command instead. Thus, this is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started
 
