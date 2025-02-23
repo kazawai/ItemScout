@@ -1,6 +1,7 @@
 // This file is a fallback for using MaterialIcons on Android and web.
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { SymbolWeight } from 'expo-symbols';
 import React from 'react';
 import { OpaqueColorValue, StyleProp, ViewStyle } from 'react-native';
@@ -32,12 +33,20 @@ export function IconSymbol({
   size = 24,
   color,
   style,
+  type,
 }: {
   name: IconSymbolName;
   size?: number;
   color: string | OpaqueColorValue;
   style?: StyleProp<ViewStyle>;
   weight?: SymbolWeight;
+  type?: 'MaterialIcons' | 'FontAwesome';
 }) {
-  return <MaterialIcons color={color} size={size} name={MAPPING[name]} />;
+  return type === 'FontAwesome' ? (
+    // @ts-ignore
+    <FontAwesome name={MAPPING[name] ?? name} size={size} color={color} />
+  ) : (
+    // @ts-ignore
+    <MaterialIcons name={MAPPING[name] ?? name} size={size} color={color} />
+  );
 }
