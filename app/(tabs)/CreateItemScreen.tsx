@@ -104,13 +104,7 @@ export default function CreateItemScreen() {
             setName('');
             setDescription('');
             setCoordinates('');
-            setImage(null);
-            
-            // Navigate back or to items list
-            setTimeout(() => {
-                router.back();
-            }, 1500);
-            
+            setImage(null);            
         } catch (error: any) {
             console.error('Error creating item:', error);
             showMessage({ 
@@ -207,8 +201,8 @@ export default function CreateItemScreen() {
                     </ThemedView>
                 </ScrollView>
             </TouchableWithoutFeedback>
+            <FlashMessage position="bottom" />
         </KeyboardAvoidingView>
-        <FlashMessage position="bottom" />
     </>
     );
 }

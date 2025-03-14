@@ -1,6 +1,10 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.100.33:5000/api'; // Replace with your server IP or domain
+const PROD_API_URL = 'https://itemscout.onrender.com/api';
+const DEV_API_URL = 'http://192.168.100.33:5000/api';
+
+const IS_PRODUCTION = process.env.EXPO_PUBLIC_NODE_ENV === 'production';
+export const API_URL = IS_PRODUCTION ? PROD_API_URL : DEV_API_URL;
 
 interface ApiResponse<T> {
   data?: T;

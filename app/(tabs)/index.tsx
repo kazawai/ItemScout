@@ -3,9 +3,10 @@ import { ThemedView } from "@/components/ThemedView";
 import { useAuth } from "@/context/AuthContext";
 import { Link, router, Stack } from "expo-router";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Dimensions, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Dimensions, StyleSheet, Image, TouchableOpacity, ActivityIndicator, View, RefreshControl, ScrollView } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { api } from "@/utils/api";
+import { useThemeColor } from "@/hooks/useThemeColor";
 
 type Item = {
   _id: string;
@@ -15,13 +16,20 @@ type Item = {
   createdAt?: string;
 };
 
+type SectionData = {
+  type: 'header' | 'item' | 'error' | 'button';
+  data?: any;
+}
+
+
 export default function HomeScreen() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const flatListRef = useRef(null);
 
   const [items, setItems] = useState<Item[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const deviceWidth = Dimensions.get('window').width;
   const itemWidth = 170;
@@ -42,6 +50,9 @@ export default function HomeScreen() {
   const fetchItems = useCallback(async () => {
     try {
       setError(null);
+
+      setIsLoading(true);
+
       // Fetch items from API
       const response = await api.getItems(1, numColumns);
       
@@ -60,6 +71,7 @@ export default function HomeScreen() {
       setError(error instanceof Error ? error.message : 'Failed to fetch items');
     } finally {
       setIsLoading(false);
+      setRefreshing(false);
     }
   }, [numColumns]);
 
@@ -67,7 +79,62 @@ export default function HomeScreen() {
     fetchItems();
   }, [fetchItems]);
 
-  const renderItem = ({ item }: { item: Item }) => (
+  useEffect(() => {
+    if (refreshing) {
+      fetchItems().then(() => setRefreshing(false));
+    }
+  }
+  , [refreshing, fetchItems]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchItems();
+  }
+
+  const generateListData = useCallback(() => {
+    const data: any[] = [];
+    
+    // Welcome section
+    data.push({
+      id: 'welcome',
+      type: 'welcome',
+      title: 'Welcome to ItemScout👋',
+      user: user
+    });
+
+    // Last items published text
+    data.push({
+      id: 'lastItems',
+      type: 'sectionTitle',
+      title: 'Here are the last items published.'
+    });
+
+    // Error message if any
+    if (error) {
+      data.push({
+        id: 'error',
+        type: 'error',
+        message: error
+      });
+    }
+    
+    // Items grid
+    data.push({
+      id: 'items',
+      type: 'items',
+      items: items
+    });
+    
+    // Buttons
+    data.push({
+      id: 'buttons',
+      type: 'buttons'
+    });
+
+    return data;
+  }, [error, items, user]);
+
+  const renderItemGrid = ({ item }: { item: Item }) => (
     <Link href={`/items/${item._id}`} asChild>
       <TouchableOpacity activeOpacity={0.7} style={{ width: itemWidth }}>
         <ThemedView style={styles.item}>
@@ -108,7 +175,7 @@ export default function HomeScreen() {
     </Link>
   );
 
-  const renderEmptyList = () => {
+  const renderEmptyItems = () => {
     if (isLoading) return null;
     
     return (
@@ -123,53 +190,97 @@ export default function HomeScreen() {
     );
   };
 
-  return (
-    <>
-      <Stack.Screen options={{ title: 'Home' }} />
-      <ThemedView style={styles.container}>
-        <ThemedText type="title" style={styles.title}>Welcome to ItemScout👋</ThemedText>
-
-        {user && (
-          <ThemedText style={styles.welcomeUser}>Hello, {user.name}</ThemedText>
-        )}
-
-        <ThemedText style={[styles.link, {marginTop: 50}]}>Here are the last items published.</ThemedText>
-
-        {error && (
+  const renderItem = ({ item }: { item: any }) => {
+    switch(item.type) {
+      case 'welcome':
+        return (
+          <View style={styles.welcomeSection}>
+            <ThemedText type="title" style={styles.title}>{item.title}</ThemedText>
+            {item.user && (
+              <ThemedText style={styles.welcomeUser}>Hello, {item.user.name}</ThemedText>
+            )}
+          </View>
+        );
+        
+      case 'sectionTitle':
+        return (
+          <ThemedText style={[styles.link, {marginTop: 50}]}>{item.title}</ThemedText>
+        );
+        
+      case 'error':
+        return (
           <ThemedView style={styles.errorContainer}>
-            <ThemedText style={styles.errorText}>{error}</ThemedText>
+            <ThemedText style={styles.errorText}>{item.message}</ThemedText>
             <TouchableOpacity style={styles.button} onPress={fetchItems}>
               <ThemedText style={styles.buttonText}>Try Again</ThemedText>
             </TouchableOpacity>
           </ThemedView>
-        )}
-
-        <ThemedView style={styles.flex_card}>
-          {isLoading ? (
-            <ActivityIndicator size="large" color="#0582CA" style={styles.loader} />
-          ) : (
-            <FlatList
-              ref={flatListRef}
-              data={items}
-              numColumns={numColumns}
-              initialNumToRender={numColumns}
-              keyExtractor={item => item._id}
-              renderItem={renderItem}
-              contentContainerStyle={{ alignItems: 'center' }}
-              style={{ width: '100%' }}
-              ListEmptyComponent={renderEmptyList}
-            />
-          )}
+        );
+        
+      case 'items':
+        return (
+          <ThemedView style={styles.flex_card}>
+            {isLoading ? (
+              <ActivityIndicator size="large" color="#0582CA" style={styles.loader} />
+            ) : (
+              <View style={styles.flatListContainer}>
+                {item.items.length > 0 ? (
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center' }}>
+                    {item.items.map((gridItem: Item) => (
+                      <View key={gridItem._id} style={{ width: itemWidth }}>
+                        {renderItemGrid({ item: gridItem })}
+                      </View>
+                    ))}
+                  </View>
+                ) : (
+                  renderEmptyItems()
+                )}
+              </View>
+            )}
+          </ThemedView>
+        );
+        
+      case 'buttons':
+        return (
           <ThemedView style={styles.flex_row}>
             <TouchableOpacity style={styles.button} onPress={() => router.navigate('/Items', { relativeToDirectory: true })}>
-              <ThemedText>See all items</ThemedText>
+              <ThemedText style={styles.buttonText}>See all items</ThemedText>
             </TouchableOpacity>
             <TouchableOpacity style={styles.button} onPress={() => router.navigate('/CreateItemScreen', { relativeToDirectory: true })}>
-              <ThemedText>Add new items</ThemedText>
+              <ThemedText style={styles.buttonText}>Add new items</ThemedText>
             </TouchableOpacity>
           </ThemedView>
-        </ThemedView>
-      </ThemedView>
+        );
+        
+      default:
+        return null;
+    }
+  };
+
+  const backgroundColor = useThemeColor({}, 'background');
+  const listData = generateListData();
+
+  return (
+    <>
+      <Stack.Screen options={{ title: 'Home' }} />
+      <FlatList
+        data={listData}
+        renderItem={renderItem}
+        keyExtractor={item => item.id}
+        contentContainerStyle={styles.container}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            colors={['#0582CA']}
+            progressBackgroundColor="#FFFFFF"
+            tintColor="#0582CA"
+          />
+        }
+        ListFooterComponent={<View style={{ height: 20 }} />}
+        showsVerticalScrollIndicator={false}
+        style={{ backgroundColor, flex: 1 }}
+      />
     </>
   );
 }
@@ -181,12 +292,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 20,
   },
+  welcomeSection: {
+    width: '100%',
+    alignItems: 'center',
+  },
   flex_row: {
     display: 'flex',
     flexDirection: 'row',
-    width: '100%',
     gap: 20,
     justifyContent: 'center',
+    marginVertical: 15,
   },
   flex_card: {
     display: 'flex',
