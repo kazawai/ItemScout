@@ -37,11 +37,33 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="Items"
+          options={{
+            title: 'All Items',
+            headerShown: false,
+            tabBarIcon: ({ color }) => <IconSymbol size={30} name="folder" color={color} type="MaterialIcons" />,
+          }}
+        />
+        <Tabs.Screen
           name="CreateItemScreen"
           options={{
             title: 'Input',
             headerShown: false,
             tabBarIcon: ({ color }) => <IconSymbol size={25} name="paperplane.fill" color={color} type="FontAwesome" />,
+          }}
+        />
+        <Tabs.Screen
+          name="Logout"
+          options={{
+            title: 'Logout',
+            headerShown: false,
+            tabBarIcon: ({ color }) => <IconSymbol 
+              size={25} 
+              name="lock" 
+              // Use a different color for the logout icon
+              color="#FF6347" 
+              type="MaterialIcons" 
+            />,
           }}
         />
     </Tabs>

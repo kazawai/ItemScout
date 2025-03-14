@@ -14,6 +14,7 @@ const MAPPING = {
   'paperplane.fill': 'send',
   'chevron.left.forwardslash.chevron.right': 'code',
   'chevron.right': 'chevron-right',
+  'logout': 'logout',
 } as Partial<
   Record<
     import('expo-symbols').SymbolViewProps['name'],
@@ -40,13 +41,17 @@ export function IconSymbol({
   color: string | OpaqueColorValue;
   style?: StyleProp<ViewStyle>;
   weight?: SymbolWeight;
-  type?: 'MaterialIcons' | 'FontAwesome';
+  type?: 'MaterialIcons' | 'FontAwesome' | 'MaterialCommunityIcons';
 }) {
-  return type === 'FontAwesome' ? (
-    // @ts-ignore
-    <FontAwesome name={MAPPING[name] ?? name} size={size} color={color} />
-  ) : (
-    // @ts-ignore
-    <MaterialIcons name={MAPPING[name] ?? name} size={size} color={color} />
-  );
+  if (type === 'FontAwesome') {
+    return (
+      // @ts-ignore
+      <FontAwesome name={MAPPING[name] ?? name} size={size} color={color} />
+    )
+  } else {
+    return (
+      // @ts-ignore
+      <MaterialIcons name={MAPPING[name] ?? name} size={size} color={color} />
+    )
+  }
 }
