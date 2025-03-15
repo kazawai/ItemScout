@@ -7,6 +7,7 @@ import FlashMessage, { showMessage } from "react-native-flash-message";
 import { api } from "@/utils/api";
 import * as ImagePicker from 'expo-image-picker';
 import { ScrollView } from "react-native-gesture-handler";
+import { Ionicons } from "@expo/vector-icons";
 
 const isMobile = Platform.OS === 'ios' || Platform.OS === 'android';
 
@@ -61,6 +62,33 @@ export default function CreateItemScreen() {
             showMessage({ message: 'Failed to take picture', type: 'danger' });
         }
     };
+
+    const chooseFromGallery = async () => {
+        if (!isMobile) {
+          showMessage({ 
+            message: 'Gallery access is only available on mobile devices', 
+            type: 'info' 
+          });
+          return;
+        }
+    
+        try {
+          const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.7,
+          });
+    
+          if (!result.canceled && result.assets && result.assets.length > 0) {
+            setImage(result.assets[0].uri);
+            showMessage({ message: 'Image selected!', type: 'success' });
+          }
+        } catch (error) {
+          console.error('Error selecting image:', error);
+          showMessage({ message: 'Failed to select image', type: 'danger' });
+        }
+      };
 
     const handleCreateItem = async () => {
         if (!name || !description) {
@@ -176,15 +204,27 @@ export default function CreateItemScreen() {
                                 </View>
                             )}
                             
-                            <TouchableOpacity 
-                                style={[styles.submit_button, !isMobile && styles.disabledButton]}
-                                onPress={pickImage}
-                            >
-                                <ThemedText style={{ color: '#fff' }}>
-                                    {image ? 'Change Picture' : 'Take Picture of Item'}
-                                    {!isMobile && ' (Mobile Only)'}
-                                </ThemedText>
-                            </TouchableOpacity>
+                            <View style={styles.imageButtonsContainer}>
+                                <TouchableOpacity 
+                                    style={[styles.imageButton, !isMobile && styles.disabledButton]}
+                                    onPress={pickImage}
+                                >
+                                    <Ionicons name="camera" size={16} color="#fff" style={styles.buttonIcon} />
+                                    <ThemedText style={{ color: '#fff' }}>
+                                    Take Photo
+                                    </ThemedText>
+                                </TouchableOpacity>
+                                
+                                <TouchableOpacity 
+                                    style={[styles.imageButton, !isMobile && styles.disabledButton]}
+                                    onPress={chooseFromGallery}
+                                >
+                                    <Ionicons name="images" size={16} color="#fff" style={styles.buttonIcon} />
+                                    <ThemedText style={{ color: '#fff' }}>
+                                    Gallery
+                                    </ThemedText>
+                                </TouchableOpacity>
+                                </View>
                             
                             <TouchableOpacity 
                                 style={[styles.submit_button, isLoading && styles.disabledButton]} 
@@ -198,10 +238,10 @@ export default function CreateItemScreen() {
                                 )}
                             </TouchableOpacity>
                         </ThemedView>
+                        <FlashMessage position="bottom" />
                     </ThemedView>
                 </ScrollView>
             </TouchableWithoutFeedback>
-            <FlashMessage position="bottom" />
         </KeyboardAvoidingView>
     </>
     );
@@ -282,5 +322,23 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255, 0, 0, 0.7)',
         padding: 8,
         borderRadius: 5,
-    }
+    },
+    imageButtonsContainer: {
+        flexDirection: 'row',
+        width: '100%',
+        justifyContent: 'space-between',
+      },
+    imageButton: {
+        backgroundColor: "#0582CA",
+        padding: 12,
+        borderRadius: 5,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+        marginHorizontal: 5,
+    },
+    buttonIcon: {
+        marginRight: 5,
+    },
 });

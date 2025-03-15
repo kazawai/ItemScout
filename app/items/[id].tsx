@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Image, StyleSheet, ActivityIndicator, ScrollView, Dimensions, TouchableOpacity } from 'react-native';
+import { Image, StyleSheet, ActivityIndicator, ScrollView, Dimensions, TouchableOpacity, Alert, Modal, View } from 'react-native';
 import { useLocalSearchParams, Stack, router } from 'expo-router';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
@@ -7,6 +7,8 @@ import { api } from '@/utils/api';
 import FlashMessage, { showMessage } from "react-native-flash-message";
 import { Ionicons } from '@expo/vector-icons';
 import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { useAuth } from '@/context/AuthContext';
+import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
 
 type ItemDetails = {
   _id: string;
@@ -16,6 +18,7 @@ type ItemDetails = {
   coordinates?: string;
   createdAt?: string;
   user?: {
+    _id: string;
     name: string;
     email: string;
   };
@@ -27,6 +30,13 @@ export default function ItemDetailScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
+  const { user } = useAuth();
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteAlertVisible, setDeleteAlertVisible] = useState(false);
+  const [location, setLocation] = useState({ latitude: 0, longitude: 0, city: '' });
+
+  const isItemOwner = user && item && item.user && user.id === item.user._id;
 
   // Function to normalize image URLs (replace backslashes with forward slashes)
   const normalizeImageUrl = (url: string): string => {
@@ -49,6 +59,20 @@ export default function ItemDetailScreen() {
     };
   };
 
+  function findCity(location: { latitude: number; longitude: number }) {
+    //Then fetch the name of the city
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${location.latitude}&longitude=${location.longitude}&localityLanguage=fi`;
+    fetch(url)
+      .then((response) => response.json())
+      .then((data) => {
+        setLocation({
+          ...location,
+          city: data.city
+        });
+      })
+      .catch((error) => console.error('Error fetching city:', error));
+  }
+
   // Format date nicely
   const formatDate = (dateString?: string) => {
     if (!dateString) return 'Unknown date';
@@ -61,6 +85,56 @@ export default function ItemDetailScreen() {
       minute: '2-digit'
     });
   };
+
+  const handleEditItem = () => {
+    setMenuVisible(false);
+    // Navigate to edit screen with the item ID
+    router.replace({ pathname: `/editItem/${id}` });
+  };
+
+  // Handle delete item with confirmation
+  const handleDeleteItem = () => {
+    setMenuVisible(false);
+    setDeleteAlertVisible(true);
+  };
+
+  // Confirm and process item deletion
+  const confirmDeleteItem = async () => {
+    if (!id) return;
+    
+    try {
+      setDeleteAlertVisible(false);
+      setIsDeleting(true);
+      
+      const response = await api.deleteItem(id.toString());
+      
+      if (response.error) {
+        throw new Error(response.error);
+      }
+      
+      showMessage({
+        message: "Item deleted successfully",
+        type: "success",
+        duration: 3000
+      });
+      
+      // Navigate back after a short delay
+      setTimeout(() => {
+        router.replace('/Items');
+      }, 500);
+      
+    } catch (error) {
+      console.error('Failed to delete item:', error);
+      showMessage({
+        message: "Failed to delete item",
+        description: error instanceof Error ? error.message : 'An error occurred',
+        type: "danger"
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+  
 
   // Fetch item details
   useEffect(() => {
@@ -90,6 +164,15 @@ export default function ItemDetailScreen() {
             }
           }
           setItem(response.data);
+          const coordinates = getCoordinates(response.data.coordinates);
+          if (coordinates) {
+            setLocation({
+              latitude: coordinates.latitude,
+              longitude: coordinates.longitude,
+              city: ''
+            });
+            findCity({ latitude: coordinates.latitude, longitude: coordinates.longitude });
+          }
           console.log('Fetched item details:', response.data);
         } else {
           throw new Error('Item not found');
@@ -134,16 +217,118 @@ export default function ItemDetailScreen() {
       </>
     );
   }
+  
+  const OptionsMenu = () => (
+    <Modal
+      visible={menuVisible}
+      transparent={true}
+      animationType="fade"
+      onRequestClose={() => setMenuVisible(false)}
+    >
+      <TouchableOpacity 
+        style={styles.modalOverlay} 
+        activeOpacity={1} 
+        onPress={() => setMenuVisible(false)}
+      >
+        <View style={styles.menuPositioner}>
+          <ThemedView style={styles.menuContainer}>
+            <TouchableOpacity 
+              style={styles.menuItem} 
+              onPress={handleEditItem}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="pencil" size={20} color="#0582CA" />
+              <ThemedText style={styles.menuItemText}>Edit Item</ThemedText>
+            </TouchableOpacity>
+            
+            <ThemedView style={styles.menuDivider} />
+            
+            <TouchableOpacity 
+              style={styles.menuItem} 
+              onPress={handleDeleteItem}
+              activeOpacity={0.7}
+            >
+              <Ionicons name="trash" size={20} color="#d32f2f" />
+              <ThemedText style={[styles.menuItemText, { color: '#d32f2f' }]}>
+                Delete Item
+              </ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+        </View>
+      </TouchableOpacity>
+    </Modal>
+  );
 
-  const coordinates = getCoordinates(item.coordinates);
+  const DeleteAlert = () => (
+    <Modal
+    visible={deleteAlertVisible}
+    transparent={true}
+    animationType="fade"
+    onRequestClose={() => setDeleteAlertVisible(false)}
+  >
+    <TouchableOpacity 
+      style={styles.alertOverlay} 
+      activeOpacity={1}
+      onPress={() => setDeleteAlertVisible(false)}
+    >
+      <TouchableOpacity 
+        activeOpacity={1} 
+        onPress={(e) => e.stopPropagation()}
+      >
+        <ThemedView style={styles.alertContainer}>
+          <Ionicons name="trash" size={48} color="#d32f2f" style={styles.alertIcon} />
+          <ThemedText type="title" style={styles.alertTitle}>Delete Item</ThemedText>
+          <ThemedText style={styles.alertMessage}>
+            Are you sure you want to delete this item? This action cannot be undone.
+          </ThemedText>
+          <ThemedView style={styles.alertButtonsContainer}>
+            <TouchableOpacity 
+              style={styles.alertButton} 
+              onPress={() => setDeleteAlertVisible(false)}
+            >
+              <ThemedText style={styles.alertButtonText}>Cancel</ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.alertButton, styles.alertDeleteButton]} 
+              onPress={confirmDeleteItem}
+            >
+              <ThemedText style={styles.alertDeleteButtonText}>Delete</ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+        </ThemedView>
+      </TouchableOpacity>
+    </TouchableOpacity>
+  </Modal>
+  );
+
+  const windowWidth = Dimensions.get('window').width;
 
   return (
     <>
       <Stack.Screen 
         options={{ 
           title: item.name,
+          headerRight: isItemOwner ? () => (
+            <TouchableWithoutFeedback
+              onPress={() => setMenuVisible(true)}
+              style={styles.optionsButton}
+            >
+              <Ionicons name="ellipsis-vertical" size={24} color="#0582CA" />
+            </TouchableWithoutFeedback>
+          ) : undefined
         }}
       />
+
+      <OptionsMenu />
+      <DeleteAlert />
+
+      {isDeleting && (
+        <ThemedView style={styles.deletingOverlay}>
+          <ActivityIndicator size="large" color="#FFFFFF" />
+          <ThemedText style={styles.deletingText}>Deleting item...</ThemedText>
+        </ThemedView>
+      )}
+
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         {item.image && !imageError ? (
           <Image
@@ -184,6 +369,14 @@ export default function ItemDetailScreen() {
               <ThemedView style={styles.separator} />
               <ThemedText type="subtitle" style={styles.sectionTitle}>Date Added</ThemedText>
               <ThemedText>{formatDate(item.createdAt)}</ThemedText>
+            </>
+          )}
+
+          {location.city && (
+            <>
+              <ThemedView style={styles.separator} />
+              <ThemedText type="subtitle" style={styles.sectionTitle}>Location</ThemedText>
+              <ThemedText>{location.city} ({location.latitude}, {location.longitude})</ThemedText>
             </>
           )}
           
@@ -325,5 +518,120 @@ const styles = StyleSheet.create({
   },
   backButton: {
     marginLeft: 10,
+  },
+  optionsButton: {
+    padding: 8,
+    marginRight: 8,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+  },
+  menuPositioner: {
+    position: 'absolute',
+    top: 35,
+    right: 0,
+    padding: 10,
+  },
+  menuContainer: {
+    width: 160,
+    borderRadius: 8,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+  },
+  menuItemText: {
+    marginLeft: 8,
+    fontSize: 16,
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: '#e0e0e050',
+    width: '100%',
+  },
+  deletingOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  deletingText: {
+    color: '#FFFFFF',
+    marginTop: 15,
+    fontSize: 16,
+  },
+  alertOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  alertContainer: {
+    width: windowWidth * 0.85,
+    maxWidth: 400,
+    padding: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  alertIcon: {
+    marginBottom: 16,
+  },
+  alertTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  alertMessage: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  alertButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  alertButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    marginHorizontal: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#eaeaea',
+  },
+  alertButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  alertDeleteButton: {
+    backgroundColor: '#d32f2f',
+  },
+  alertDeleteButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+    fontSize: 16,
   },
 });
