@@ -11,7 +11,8 @@ export default function LoginScreen() {
   const [password, setPassword] = useState('');
   const [isLoginView, setIsLoginView] = useState(true);
   const [name, setName] = useState('');
-  const { login, register, isLoading } = useAuth();
+  const { login, register } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleAuth = async () => {
     if (!email || !password) {
@@ -35,6 +36,7 @@ export default function LoginScreen() {
     }
 
     try {
+      setIsLoading(true);
       let success;
       if (isLoginView) {
         success = await login(email, password);
@@ -76,6 +78,8 @@ export default function LoginScreen() {
         message: 'An error occurred. Please try again later.',
         type: 'danger',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 

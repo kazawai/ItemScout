@@ -2,7 +2,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Link, Stack, router } from "expo-router";
 import React, { useCallback, useEffect, useState, useRef } from "react";
-import { Dimensions, StyleSheet, Image, TouchableOpacity, ActivityIndicator, TextInput, View } from "react-native";
+import { Dimensions, StyleSheet, Image, TouchableOpacity, ActivityIndicator, TextInput, View, RefreshControl } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
 import { api } from "@/utils/api";
 import FlashMessage, { showMessage } from "react-native-flash-message";
@@ -25,6 +25,7 @@ export default function ItemsScreen() {
   const [hasMoreItems, setHasMoreItems] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const PAGE_SIZE = 10;
   const flatListRef = useRef(null);
@@ -100,9 +101,11 @@ export default function ItemsScreen() {
   // Refresh the list
   const handleRefresh = async () => {
     if (isLoading) return;
+    setRefreshing(true);
     setCurrentPage(1);
     setHasMoreItems(true);
     await fetchItems(1, true);
+    setRefreshing(false);
   };
 
   // Search functionality
@@ -291,8 +294,16 @@ export default function ItemsScreen() {
             ListFooterComponent={renderFooter}
             onEndReached={loadMoreItems}
             onEndReachedThreshold={0.3}
-            refreshing={isLoading && currentPage === 1}
-            onRefresh={handleRefresh}
+            refreshing={refreshing}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                colors={['#0582CA']}
+                progressBackgroundColor="#FFFFFF"
+                tintColor="#0582CA"
+              />
+            }
           />
         )}
         

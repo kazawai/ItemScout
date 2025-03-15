@@ -111,7 +111,7 @@ exports.deleteItem = async (req, res) => {
       return res.status(401).json({ message: 'User not authorized to delete this item' });
     }
 
-    await item.remove();
+    await item.deleteOne();
 
     res.json({ message: 'Item removed' });
   } catch (error) {

@@ -197,6 +197,48 @@ export const api = {
     }
   },
 
+  async updateItem(id: string, item: { name: string; description: string; coordinates?: string; image?: string }): Promise<ApiResponse<any>> {
+    try {
+      const response = await fetch(`${API_URL}/items/${id}`, {
+        method: 'PUT',
+        headers: await createHeaders(),
+        body: JSON.stringify(item),
+      });
+
+      const data = await response.json();
+      console.log(data);
+
+      if (!response.ok) {
+        return { error: data.message || 'Failed to update item' };
+      }
+
+      return { data };
+    } catch (error) {
+      console.error('Update item error:', error);
+      return { error: 'Network error' };
+    }
+  },
+
+  async deleteItem(id: string): Promise<ApiResponse<any>> {
+    try {
+      const response = await fetch(`${API_URL}/items/${id}`, {
+        method: 'DELETE',
+        headers: await createHeaders(),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { error: data.message || 'Failed to delete item' };
+      }
+
+      return { data };
+    } catch (error) {
+      console.error('Delete item error:', error);
+      return { error: 'Network error' };
+    }
+  },
+
   async getUserById(id: string): Promise<ApiResponse<any>> {
     try {
       const response = await fetch(`${API_URL}/users/${id}`, {
