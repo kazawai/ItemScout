@@ -25,9 +25,11 @@ router.route('/:id')
 
 router.post('/upload', upload.single('image'), (req, res) => {
   try {
+    const filePath = req.file.path.replace(/^uploads\//, '');
     res.json({
-      imageUrl: `${req.protocol}://${req.get('host')}/${req.file.path}`
+      imageUrl: `${req.protocol}://${req.get('host')}/uploads/${filePath}`
     });
+    console.log('File uploaded:', req.file);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error', error: error.message });

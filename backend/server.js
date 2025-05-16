@@ -27,6 +27,7 @@ app.use(express.urlencoded({ extended: true }));
 // Images
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)){
+  console.log('Creating uploads directory...');
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 app.use('/uploads', express.static(uploadsDir));
