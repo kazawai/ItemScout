@@ -39,7 +39,7 @@ Create Item :
 
 Edit Item :
 
-<img src="Screenshots/Item_edit.jpg.jpg" width="250" alt="Edit Item">
+<img src="Screenshots/Item_edit.jpg" width="250" alt="Edit Item">
 
 ## 🚀 Installation & Setup
 
