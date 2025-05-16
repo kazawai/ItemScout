@@ -27,6 +27,10 @@ You can start developing by editing the files inside the **app** directory. This
 
 Color palette : [https://coolors.co/palette/00a6fb-0582ca-006494-003554-051923](https://coolors.co/palette/00a6fb-0582ca-006494-003554-051923).
 
+Test account :
+- test@gmail.com
+- Password
+
 ## Get a fresh project
 
 When you're ready, run:

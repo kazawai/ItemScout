@@ -121,7 +121,7 @@ export default function ItemDetailScreen() {
       // Navigate back after a short delay
       setTimeout(() => {
         router.replace('/Items');
-      }, 500);
+      }, 1000);
       
     } catch (error) {
       console.error('Failed to delete item:', error);
@@ -419,8 +419,8 @@ export default function ItemDetailScreen() {
             </TouchableOpacity>
           </ThemedView>
         </ThemedView>
+        <FlashMessage position="bottom" />
       </ScrollView>
-      <FlashMessage position="bottom" />
     </>
   );
 }
