@@ -1,6 +1,6 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { api } from '@/utils/api';
+import React, { createContext, useState, useContext, useEffect } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { api } from "@/utils/api";
 
 type User = {
   id: string;
@@ -18,7 +18,9 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -26,13 +28,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check if user is already logged in on app start
     const checkUserSession = async () => {
       try {
-        const userJson = await AsyncStorage.getItem('user');
+        const userJson = await AsyncStorage.getItem("user");
         if (userJson) {
           setUser(JSON.parse(userJson));
-          console.log('User loaded from storage');
+          console.log("User loaded from storage");
         }
       } catch (error) {
-        console.error('Failed to load user from storage', error);
+        console.error("Failed to load user from storage", error);
       } finally {
         setIsLoading(false);
       }
@@ -44,36 +46,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const { data, error } = await api.login(email, password);
-      
+
       if (error || !data) {
         return false;
       }
-      
+
       setUser({
         id: data.id,
         email: data.email,
         name: data.name,
       });
 
-      console.log('User logged in');
+      console.log("User logged in");
       return true;
     } catch (error) {
-      console.error('Login failed', error);
+      console.error("Login failed", error);
       return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (email: string, name: string, password: string): Promise<boolean> => {
+  const register = async (
+    email: string,
+    name: string,
+    password: string
+  ): Promise<boolean> => {
     try {
       const { data, error } = await api.register(name, email, password);
-      
+
       if (error || !data) {
-        console.error('Registration failed:', error);
+        console.error("Registration failed:", error);
         return false;
       }
-      
+
       setUser({
         id: data.id,
         email: data.email,
@@ -82,7 +88,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       return true;
     } catch (error) {
-      console.error('Registration failed', error);
+      console.error("Registration failed", error);
       return false;
     } finally {
       setIsLoading(false);
@@ -94,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await api.logout();
       setUser(null);
     } catch (error) {
-      console.error('Logout failed', error);
+      console.error("Logout failed", error);
     }
   };
 
@@ -108,7 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

@@ -1,9 +1,9 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
 // Generate JWT token
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "30d" });
 };
 
 // Register a new user
@@ -14,14 +14,14 @@ exports.register = async (req, res) => {
     // Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: "User already exists" });
     }
 
     // Create new user
     const user = await User.create({
       name,
       email,
-      password
+      password,
     });
 
     // Send response with token
@@ -29,11 +29,11 @@ exports.register = async (req, res) => {
       id: user._id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id)
+      token: generateToken(user._id),
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -45,13 +45,13 @@ exports.login = async (req, res) => {
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     // Check if password matches
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(401).json({ message: "Invalid email or password" });
     }
 
     // Send response with token
@@ -59,11 +59,11 @@ exports.login = async (req, res) => {
       id: user._id,
       name: user.name,
       email: user.email,
-      token: generateToken(user._id)
+      token: generateToken(user._id),
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
 
@@ -73,10 +73,10 @@ exports.getCurrentUser = async (req, res) => {
     res.json({
       id: req.user._id,
       name: req.user.name,
-      email: req.user.email
+      email: req.user.email,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: "Server error", error: error.message });
   }
 };
