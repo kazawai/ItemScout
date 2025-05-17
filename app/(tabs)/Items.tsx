@@ -133,23 +133,18 @@ export default function ItemsScreen() {
       setError(null);
       setIsLoading(true);
 
-      // Here you would need to implement a search endpoint in your API
-      // For now, we'll just filter the results client-side (not ideal for large datasets)
-      const response = await api.getItems(1, 50); // Get more items to search through
+      // Fetch items based on search query
+      const response = await api.getItemsSearch(1, 10, searchQuery);
 
       if (response.error) {
         throw new Error(response.error);
       }
 
       if (response.data?.items) {
-        const filteredItems = response.data.items.filter(
-          (item) =>
-            item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.description.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-
-        setItems(filteredItems);
-        setHasMoreItems(false); // Disable infinite scroll during search
+        const newItems = response.data.items;
+        setItems(newItems);
+        setCurrentPage(1);
+        setHasMoreItems(newItems.length >= PAGE_SIZE);
       }
     } catch (error) {
       console.error("Search failed:", error);

@@ -125,3 +125,34 @@ exports.deleteItem = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
+
+exports.getItemSearch = async (req, res) => {
+  try {
+    const q = req.query.search;
+    // Query has 3 parts: page, limit, and q
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    // Check if q is empty
+    if (!q) {
+      return res.status(400).json({ message: "Search query is required" });
+    }
+
+    // Get only items created by the current user
+    const items = await Item.find({
+      user: req.user.id,
+      $or: [
+        { name: { $regex: q, $options: "i" } },
+        { description: { $regex: q, $options: "i" } },
+      ],
+    })
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    res.json(items);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
