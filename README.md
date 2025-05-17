@@ -44,6 +44,7 @@ Edit Item :
 ## 🚀 Installation & Setup
 
 ### Prerequisites
+
 - Node.js (v14 or later)
 - npm or yarn
 - Expo CLI (`npm install -g expo-cli`)
@@ -52,33 +53,42 @@ Edit Item :
 ### Setup Instructions
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/kazawai/ItemScout.git
    cd ItemScout
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Configure environment variables**
    In the `.env` file in the root directory, replace :
+
    ```
    EXPO_PUBLIC_NODE_ENV=production
    ```
+
    by :
+
    ```
    EXPO_PUBLIC_NODE_ENV=dev
    ```
+
    If you want to work on your own backend, otherwise, leave it.
 
 4. **Start the backend server (if needed)**
+
    ```bash
    cd backend
    npm install
    ```
+
    In the `.env` file, replace :
+
    ```
    PORT=5000
    MONGO_URI=your_local_mongo_db
@@ -86,8 +96,15 @@ Edit Item :
    NODE_ENV=development
    ```
 
+   Then :
+
+   ```
+   npm start
+   ```
+
 5. **Start the app**
    In a new terminal window:
+
    ```bash
    npx expo start
    ```
@@ -100,14 +117,16 @@ Edit Item :
 ## 🧪 Testing
 
 You can use the following test account to explore the app:
+
 - **Email**: test@gmail.com
 - **Password**: Password
 
 ## 🎨 Design
 
 ItemScout features a sleek blue color palette:
+
 - Primary Blue: #00A6FB
-- Secondary Blue: #0582CA 
+- Secondary Blue: #0582CA
 - Dark Blue: #006494
 - Deep Blue: #003554
 - Background: #051923

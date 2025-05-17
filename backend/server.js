@@ -59,6 +59,7 @@ const startServer = async () => {
       useUnifiedTopology: true,
     });
     console.log("MongoDB connected");
+    console.log("Environment:", process.env.NODE_ENV);
 
     server = app.listen(PORT, "0.0.0.0", () => {
       console.log(`Server running on port ${PORT}`);
@@ -72,21 +73,20 @@ const startServer = async () => {
 const shutdown = async () => {
   console.log("Shutting down gracefully...");
   if (server) {
-    server.close(() => {
-      console.log("HTTP server closed");
-      mongoose.connection.close(false, () => {
-        console.log("MongoDB connection closed");
-        process.exit(0);
-      });
-    });
-
-    // Force close after 10s
+    // Force close after 4s
     setTimeout(() => {
       console.error(
         "Could not close connections in time, forcefully shutting down"
       );
       process.exit(1);
-    }, 10000);
+    }, 4000);
+
+    server.close(() => {
+      console.log("HTTP server closed");
+      mongoose.connection.close(false);
+      console.log("MongoDB connection closed");
+      process.exit(0);
+    });
   }
 };
 

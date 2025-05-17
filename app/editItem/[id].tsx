@@ -227,7 +227,6 @@ export default function EditItemScreen() {
         image: imageUrl || "",
       };
 
-      console.log("Updating item with data:", itemData);
       const response = await api.updateItem(id.toString(), itemData);
 
       if (response.error) {

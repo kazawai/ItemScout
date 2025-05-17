@@ -239,7 +239,6 @@ export default function ItemDetailScreen() {
       <>
         <Stack.Screen options={{ title: "Item Details" }} />
         <ThemedView style={styles.loadingContainer}>
-          <div data-testid="loading-indicator" />
           <ActivityIndicator size="large" color="#0582CA" />
           <ThemedText style={styles.loadingText}>
             Loading item details...

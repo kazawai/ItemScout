@@ -140,8 +140,8 @@ export default function ItemsScreen() {
         throw new Error(response.error);
       }
 
-      if (response.data?.items) {
-        const newItems = response.data.items;
+      if (response.data) {
+        const newItems = response.data;
         setItems(newItems);
         setCurrentPage(1);
         setHasMoreItems(newItems.length >= PAGE_SIZE);
