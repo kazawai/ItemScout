@@ -93,6 +93,7 @@ export default function EditItemScreen() {
           }
           
           // Populate form with existing data
+          console.log(item.name, item.description, item.coordinates);
           setName(item.name || '');
           setDescription(item.description || '');
           setCoordinates(item.coordinates || '');

@@ -172,6 +172,17 @@ export const api = {
     }
   },
 
+  getImageUrl(path: string): string {
+    // Force HTTPS
+    const baseUrl = API_URL.replace(/^http:/, 'https:').replace(/\/api$/, '');
+    const normalizedPath = path.replace(/^https?:\/\/[^/]+/i, '').replace(/\\/g, '/');
+    
+    const imageUrl = `${baseUrl}${normalizedPath.startsWith('/') ? '' : '/'}${normalizedPath}`;
+    console.log('Image URL:', imageUrl);
+
+    return imageUrl;
+  },
+
   async getItemById(id: string): Promise<ApiResponse<any>> {
     try {
       const response = await fetch(`${API_URL}/items/${id}`, {
