@@ -1,10 +1,10 @@
-import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform } from 'react-native';
+import { Tabs } from "expo-router";
+import React from "react";
+import { Platform } from "react-native";
 
-import { Colors } from '@/constants/Colors';
-import { useColorScheme } from '@/hooks/useColorScheme';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+import { Colors } from "@/constants/Colors";
+import { useColorScheme } from "@/hooks/useColorScheme";
+import { IconSymbol } from "@/components/ui/IconSymbol";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -12,60 +12,84 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
+        tabBarActiveTintColor: Colors[colorScheme ?? "light"].tint,
         headerShown: false,
         tabBarShowLabel: false,
         tabBarStyle: Platform.select({
           ios: {
             // Use a transparent background on iOS to show the blur effect
-            position: 'absolute',
+            position: "absolute",
           },
           default: {
-            backgroundColor: Colors[colorScheme ?? 'light'].background,
+            backgroundColor: Colors[colorScheme ?? "light"].background,
             minHeight: 50,
             paddingBottom: 5,
             paddingTop: 5,
           },
         }),
-      }}>
-        <Tabs.Screen
-          name="index"
-          options={{
-            title: 'Home',
-            headerShown: false,
-            tabBarIcon: ({ color }) => <IconSymbol size={30} name="house.fill" color={color} type="FontAwesome" />,
-          }}
-        />
-        <Tabs.Screen
-          name="Items"
-          options={{
-            title: 'All Items',
-            headerShown: false,
-            tabBarIcon: ({ color }) => <IconSymbol size={30} name="folder" color={color} type="MaterialIcons" />,
-          }}
-        />
-        <Tabs.Screen
-          name="CreateItemScreen"
-          options={{
-            title: 'Input',
-            headerShown: false,
-            tabBarIcon: ({ color }) => <IconSymbol size={25} name="paperplane.fill" color={color} type="FontAwesome" />,
-          }}
-        />
-        <Tabs.Screen
-          name="Logout"
-          options={{
-            title: 'Logout',
-            headerShown: false,
-            tabBarIcon: ({ color }) => <IconSymbol 
-              size={25} 
-              name="lock" 
+      }}
+    >
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: "Home",
+          headerShown: false,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol
+              size={30}
+              name="house.fill"
+              color={color}
+              type="FontAwesome"
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="Items"
+        options={{
+          title: "All Items",
+          headerShown: false,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol
+              size={30}
+              name="folder"
+              color={color}
+              type="MaterialIcons"
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="CreateItemScreen"
+        options={{
+          title: "Input",
+          headerShown: false,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol
+              size={25}
+              name="paperplane.fill"
+              color={color}
+              type="FontAwesome"
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="Logout"
+        options={{
+          title: "Logout",
+          headerShown: false,
+          tabBarIcon: ({ color }) => (
+            <IconSymbol
+              size={25}
+              name="lock"
               // Use a different color for the logout icon
-              color="#FF6347" 
-              type="MaterialIcons" 
-            />,
-          }}
-        />
+              color="#FF6347"
+              type="MaterialIcons"
+            />
+          ),
+        }}
+      />
     </Tabs>
   );
 }

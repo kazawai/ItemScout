@@ -1,9 +1,9 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const PROD_API_URL = 'https://itemscout.onrender.com/api';
-const DEV_API_URL = 'http://192.168.100.33:5000/api';
+const PROD_API_URL = "https://itemscout.onrender.com/api";
+const DEV_API_URL = "http://192.168.100.33:5000/api";
 
-const IS_PRODUCTION = process.env.EXPO_PUBLIC_NODE_ENV === 'production';
+const IS_PRODUCTION = process.env.EXPO_PUBLIC_NODE_ENV === "production";
 export const API_URL = IS_PRODUCTION ? PROD_API_URL : DEV_API_URL;
 
 interface ApiResponse<T> {
@@ -13,19 +13,19 @@ interface ApiResponse<T> {
 
 // Get the token from AsyncStorage
 const getToken = async (): Promise<string | null> => {
-  return await AsyncStorage.getItem('token');
+  return await AsyncStorage.getItem("token");
 };
 
 // Create headers with authentication token
 const createHeaders = async (includeToken = true): Promise<HeadersInit_> => {
   const headers: HeadersInit_ = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
 
   if (includeToken) {
     const token = await getToken();
     if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+      headers["Authorization"] = `Bearer ${token}`;
     }
   }
 
@@ -35,10 +35,14 @@ const createHeaders = async (includeToken = true): Promise<HeadersInit_> => {
 // API client methods
 export const api = {
   // Auth endpoints
-  async register(name: string, email: string, password: string): Promise<ApiResponse<any>> {
+  async register(
+    name: string,
+    email: string,
+    password: string
+  ): Promise<ApiResponse<any>> {
     try {
       const response = await fetch(`${API_URL}/auth/register`, {
-        method: 'POST',
+        method: "POST",
         headers: await createHeaders(false),
         body: JSON.stringify({ name, email, password }),
       });
@@ -46,28 +50,31 @@ export const api = {
       const data = await response.json();
 
       if (!response.ok) {
-        return { error: data.message || 'Registration failed' };
+        return { error: data.message || "Registration failed" };
       }
 
       // Save token to AsyncStorage
-      await AsyncStorage.setItem('token', data.token);
-      await AsyncStorage.setItem('user', JSON.stringify({
-        id: data.id,
-        name: data.name,
-        email: data.email,
-      }));
+      await AsyncStorage.setItem("token", data.token);
+      await AsyncStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: data.id,
+          name: data.name,
+          email: data.email,
+        })
+      );
 
       return { data };
     } catch (error) {
-      console.error('Registration error:', error);
-      return { error: 'Network error' };
+      console.error("Registration error:", error);
+      return { error: "Network error" };
     }
   },
 
   async login(email: string, password: string): Promise<ApiResponse<any>> {
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
-        method: 'POST',
+        method: "POST",
         headers: await createHeaders(false),
         body: JSON.stringify({ email, password }),
       });
@@ -75,54 +82,65 @@ export const api = {
       const data = await response.json();
 
       if (!response.ok) {
-        return { error: data.message || 'Login failed' };
+        return { error: data.message || "Login failed" };
       }
 
       // Save token to AsyncStorage
-      await AsyncStorage.setItem('token', data.token);
-      await AsyncStorage.setItem('user', JSON.stringify({
-        id: data.id,
-        name: data.name,
-        email: data.email,
-      }));
+      await AsyncStorage.setItem("token", data.token);
+      await AsyncStorage.setItem(
+        "user",
+        JSON.stringify({
+          id: data.id,
+          name: data.name,
+          email: data.email,
+        })
+      );
 
       return { data };
     } catch (error) {
-      console.error('Login error:', error);
-      return { error: 'Network error' };
+      console.error("Login error:", error);
+      return { error: "Network error" };
     }
   },
 
   async logout(): Promise<void> {
-    await AsyncStorage.removeItem('token');
-    await AsyncStorage.removeItem('user');
+    await AsyncStorage.removeItem("token");
+    await AsyncStorage.removeItem("user");
   },
 
   // Items endpoints
   async getItems(page = 1, limit = 10): Promise<ApiResponse<any>> {
     try {
-      const response = await fetch(`${API_URL}/items?page=${page}&limit=${limit}`, {
-        method: 'GET',
-        headers: await createHeaders(),
-      });
+      const response = await fetch(
+        `${API_URL}/items?page=${page}&limit=${limit}`,
+        {
+          method: "GET",
+          headers: await createHeaders(),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        return { error: data.message || 'Failed to fetch items' };
+        return { error: data.message || "Failed to fetch items" };
       }
 
       return { data };
     } catch (error) {
-      console.error('Get items error:', error);
-      return { error: 'Network error' };
+      console.error("Get items error:", error);
+      return { error: "Network error" };
     }
   },
 
-  async createItem(item: { name: string; description: string; coordinates?: string; image?: string }): Promise<ApiResponse<any>> {
+  async createItem(item: {
+    name: string;
+    description: string;
+    coordinates?: string;
+    image?: string;
+  }): Promise<ApiResponse<any>> {
     try {
       const response = await fetch(`${API_URL}/items`, {
-        method: 'POST',
+        method: "POST",
         headers: await createHeaders(),
         body: JSON.stringify(item),
       });
@@ -130,31 +148,31 @@ export const api = {
       const data = await response.json();
 
       if (!response.ok) {
-        return { error: data.message || 'Failed to create item' };
+        return { error: data.message || "Failed to create item" };
       }
 
       return { data };
     } catch (error) {
-      console.error('Create item error:', error);
-      return { error: 'Network error' };
+      console.error("Create item error:", error);
+      return { error: "Network error" };
     }
   },
 
   async uploadImage(imageUri: string): Promise<ApiResponse<any>> {
     try {
       const formData = new FormData();
-      formData.append('image', {
+      formData.append("image", {
         uri: imageUri,
-        type: 'image/jpeg', // Adjust as needed
-        name: 'photo.jpg',
+        type: "image/jpeg", // Adjust as needed
+        name: "photo.jpg",
       } as any);
 
       const token = await getToken();
       const response = await fetch(`${API_URL}/items/upload`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'multipart/form-data',
-          'Authorization': token ? `Bearer ${token}` : '',
+          "Content-Type": "multipart/form-data",
+          Authorization: token ? `Bearer ${token}` : "",
         },
         body: formData,
       });
@@ -162,23 +180,27 @@ export const api = {
       const data = await response.json();
 
       if (!response.ok) {
-        return { error: data.message || 'Failed to upload image' };
+        return { error: data.message || "Failed to upload image" };
       }
 
       return { data };
     } catch (error) {
-      console.error('Upload image error:', error);
-      return { error: 'Network error' };
+      console.error("Upload image error:", error);
+      return { error: "Network error" };
     }
   },
 
   getImageUrl(path: string): string {
     // Force HTTPS
-    const baseUrl = API_URL.replace(/^http:/, 'https:').replace(/\/api$/, '');
-    const normalizedPath = path.replace(/^https?:\/\/[^/]+/i, '').replace(/\\/g, '/');
-    
-    const imageUrl = `${baseUrl}${normalizedPath.startsWith('/') ? '' : '/'}${normalizedPath}`;
-    console.log('Image URL:', imageUrl);
+    const baseUrl = API_URL.replace(/^http:/, "https:").replace(/\/api$/, "");
+    const normalizedPath = path
+      .replace(/^https?:\/\/[^/]+/i, "")
+      .replace(/\\/g, "/");
+
+    const imageUrl = `${baseUrl}${
+      normalizedPath.startsWith("/") ? "" : "/"
+    }${normalizedPath}`;
+    console.log("Image URL:", imageUrl);
 
     return imageUrl;
   },
@@ -186,32 +208,40 @@ export const api = {
   async getItemById(id: string): Promise<ApiResponse<any>> {
     try {
       const response = await fetch(`${API_URL}/items/${id}`, {
-        method: 'GET',
+        method: "GET",
         headers: await createHeaders(),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
-        return { error: data.message || 'Failed to fetch item details' };
+        return { error: data.message || "Failed to fetch item details" };
       }
-  
+
       // Normalize image URL if present
       if (data.image) {
-        data.image = data.image.replace(/\\/g, '/');
+        data.image = data.image.replace(/\\/g, "/");
       }
-  
+
       return { data };
     } catch (error) {
-      console.error('Get item details error:', error);
-      return { error: 'Network error' };
+      console.error("Get item details error:", error);
+      return { error: "Network error" };
     }
   },
 
-  async updateItem(id: string, item: { name: string; description: string; coordinates?: string; image?: string }): Promise<ApiResponse<any>> {
+  async updateItem(
+    id: string,
+    item: {
+      name: string;
+      description: string;
+      coordinates?: string;
+      image?: string;
+    }
+  ): Promise<ApiResponse<any>> {
     try {
       const response = await fetch(`${API_URL}/items/${id}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: await createHeaders(),
         body: JSON.stringify(item),
       });
@@ -220,53 +250,53 @@ export const api = {
       console.log(data);
 
       if (!response.ok) {
-        return { error: data.message || 'Failed to update item' };
+        return { error: data.message || "Failed to update item" };
       }
 
       return { data };
     } catch (error) {
-      console.error('Update item error:', error);
-      return { error: 'Network error' };
+      console.error("Update item error:", error);
+      return { error: "Network error" };
     }
   },
 
   async deleteItem(id: string): Promise<ApiResponse<any>> {
     try {
       const response = await fetch(`${API_URL}/items/${id}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: await createHeaders(),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        return { error: data.message || 'Failed to delete item' };
+        return { error: data.message || "Failed to delete item" };
       }
 
       return { data };
     } catch (error) {
-      console.error('Delete item error:', error);
-      return { error: 'Network error' };
+      console.error("Delete item error:", error);
+      return { error: "Network error" };
     }
   },
 
   async getUserById(id: string): Promise<ApiResponse<any>> {
     try {
       const response = await fetch(`${API_URL}/users/${id}`, {
-        method: 'GET',
+        method: "GET",
         headers: await createHeaders(),
       });
-  
+
       const data = await response.json();
-  
+
       if (!response.ok) {
-        return { error: data.message || 'Failed to fetch user details' };
+        return { error: data.message || "Failed to fetch user details" };
       }
-  
+
       return { data };
     } catch (error) {
-      console.error('Get user details error:', error);
-      return { error: 'Network error' };
+      console.error("Get user details error:", error);
+      return { error: "Network error" };
     }
-  }
+  },
 };
