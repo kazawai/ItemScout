@@ -5,6 +5,7 @@ const {
   createItem,
   updateItem,
   deleteItem,
+  getItemSearch,
 } = require("../controllers/itemController");
 const { protect } = require("../middleware/auth");
 const upload = require("../middleware/upload");
@@ -16,13 +17,13 @@ router.use(protect);
 
 router.route("/").get(getItems).post(createItem);
 
-router.route("/search").get(getItems);
+router.route("/search").get(getItemSearch);
 
 router.route("/:id").get(getItemById).put(updateItem).delete(deleteItem);
 
 router.post("/upload", upload.single("image"), (req, res) => {
   try {
-    const filePath = req.file.path.replace(/^uploads\//, "");
+    const filePath = req.file.path.replace(/^uploads\/|uploads\\/, "");
     res.json({
       imageUrl: `${req.protocol}://${req.get("host")}/uploads/${filePath}`,
     });

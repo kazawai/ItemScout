@@ -7,13 +7,13 @@ exports.getItems = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    // Get only items created by the current user
-    const items = await Item.find({ user: req.user.id })
+    // Get items that belong to any user
+    const items = await Item.find()
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
 
-    const totalItems = await Item.countDocuments({ user: req.user.id });
+    const totalItems = await Item.countDocuments();
 
     res.json({
       items,
@@ -138,17 +138,16 @@ exports.getItemSearch = async (req, res) => {
       return res.status(400).json({ message: "Search query is required" });
     }
 
-    // Get only items created by the current user
+    console.log("Search query:", q);
+
     const items = await Item.find({
-      user: req.user.id,
-      $or: [
-        { name: { $regex: q, $options: "i" } },
-        { description: { $regex: q, $options: "i" } },
-      ],
+      name: { $regex: q, $options: "i" },
     })
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
+
+    console.log("Items found:", items);
 
     res.json(items);
   } catch (error) {
