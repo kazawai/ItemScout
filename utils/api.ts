@@ -230,6 +230,33 @@ export const api = {
     }
   },
 
+  async getItemsSearch(
+    page = 1,
+    limit = 10,
+    search: string
+  ): Promise<ApiResponse<any>> {
+    try {
+      const response = await fetch(
+        `${API_URL}/items/search?page=${page}&limit=${limit}&search=${search}`,
+        {
+          method: "GET",
+          headers: await createHeaders(),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return { error: data.message || "Failed to fetch items" };
+      }
+
+      return { data };
+    } catch (error) {
+      console.error("Get items search error:", error);
+      return { error: "Network error" };
+    }
+  },
+
   async updateItem(
     id: string,
     item: {

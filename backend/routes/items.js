@@ -16,6 +16,8 @@ router.use(protect);
 
 router.route("/").get(getItems).post(createItem);
 
+router.route("/search").get(getItems);
+
 router.route("/:id").get(getItemById).put(updateItem).delete(deleteItem);
 
 router.post("/upload", upload.single("image"), (req, res) => {
