@@ -36,12 +36,15 @@ export default function ItemDetailScreen() {
   const [deleteAlertVisible, setDeleteAlertVisible] = useState(false);
   const [location, setLocation] = useState({ latitude: 0, longitude: 0, city: '' });
 
+  const [imageLoading, setImageLoading] = useState(true);
+  const IMAGE_TIMEOUT = 15000;
+
   const isItemOwner = user && item && item.user && user.id === item.user._id;
 
   // Function to normalize image URLs (replace backslashes with forward slashes)
   const normalizeImageUrl = (url: string): string => {
     if (!url) return '';
-    return url.replace(/\\/g, '/');
+    return api.getImageUrl(url);
   };
 
   // Parse coordinates from string format (e.g. "12.345,67.890")
@@ -192,11 +195,31 @@ export default function ItemDetailScreen() {
     fetchItemDetails();
   }, [id]);
 
+  // Handle image loading timeout
+  useEffect(() => {
+    if (item?.image) {
+      // Handle image loading timeout
+      setImageLoading(true);
+      const timeoutId = setTimeout(() => {
+        if (imageLoading) {
+          console.log('Image load timed out');
+          setImageError(true);
+          setImageLoading(false);
+        }
+      }, IMAGE_TIMEOUT);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [item?.image, imageLoading]);
+
   if (isLoading) {
     return (
       <>
         <Stack.Screen options={{ title: 'Item Details' }} />
-        <ThemedView style={styles.loadingContainer}>
+        <ThemedView
+          style={styles.loadingContainer}
+        >
+          <div data-testid="loading-indicator"/>
           <ActivityIndicator size="large" color="#0582CA" />
           <ThemedText style={styles.loadingText}>Loading item details...</ThemedText>
         </ThemedView>
@@ -312,6 +335,7 @@ export default function ItemDetailScreen() {
             <TouchableWithoutFeedback
               onPress={() => setMenuVisible(true)}
               style={styles.optionsButton}
+              data-testid="options-menu-button"
             >
               <Ionicons name="ellipsis-vertical" size={24} color="#0582CA" />
             </TouchableWithoutFeedback>
@@ -331,15 +355,25 @@ export default function ItemDetailScreen() {
 
       <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
         {item.image && !imageError ? (
-          <Image
-            source={{ uri: normalizeImageUrl(item.image) }}
-            style={styles.image}
-            resizeMode="cover"
-            onError={(e) => {
-              console.error('Image load error:', e.nativeEvent.error);
-              setImageError(true);
-            }}
-          />
+          <>
+            {imageLoading && (
+              <View style={[styles.image, styles.imageLoader]}>
+                <ActivityIndicator size="large" color="#0582CA" />
+              </View>
+            )}
+            <Image
+              source={{ uri: normalizeImageUrl(item.image) }}
+              style={[styles.image, imageLoading ? { opacity: 0 } : { opacity: 1 }]}
+              resizeMode="cover"
+              onLoadStart={() => setImageLoading(true)}
+              onLoad={() => setImageLoading(false)}
+              onError={() => {
+                setImageError(true);
+                setImageLoading(false);
+                console.log(imageError);
+              }}
+            />
+          </>
         ) : (
           <Image
             source={require('@/assets/images/logov1.png')}
@@ -633,5 +667,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontWeight: '600',
     fontSize: 16,
+  },
+  imageLoader: {
+    position: 'absolute',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#051923',
   },
 });
