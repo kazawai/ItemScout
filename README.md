@@ -121,6 +121,12 @@ You can use the following test account to explore the app:
 - **Email**: test@gmail.com
 - **Password**: Password
 
+Unit tests are provided for the backend. To run them, open a terminal in the `backend` folder and run :
+
+```
+npm test
+```
+
 ## 🎨 Design
 
 ItemScout features a sleek blue color palette:
